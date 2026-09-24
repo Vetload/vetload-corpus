@@ -4,8 +4,8 @@ This repository is component **C26 Corpus** of Vetload, built by an independent 
 
 ## Before anything else
 
-1. Read your brief: `../platform/docs/components/C26-corpus.md` locally, or [C26-corpus.md](https://github.com/Vetload/platform/blob/main/docs/components/C26-corpus.md) for organisation members.
-2. Read the agent playbook: `../platform/docs/program/agent-playbook.md`.
+1. Read your brief: `../vetload-platform/docs/components/C26-corpus.md` locally, or [C26-corpus.md](https://github.com/Vetload/vetload-platform/blob/main/docs/components/C26-corpus.md) for organisation members.
+2. Read the agent playbook: `../vetload-platform/docs/program/agent-playbook.md`.
 3. Your first pull request is a planning pull request with `ARCHITECTURE.md` and `IMPLEMENTATION_PLAN.md` in this repository.
 
 ## This repository is public
