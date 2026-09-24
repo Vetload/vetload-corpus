@@ -1,0 +1,350 @@
+{
+  "manifest_version": "0.1.0-draft",
+  "corpus_version": "0.0.0-example",
+  "contracts_version": "0.1.0",
+  "contracts_schema": {
+    "asset": "vetload-corpus-schema-0.1.0.tar.gz",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "generated_by": {
+    "generator_image": "ghcr.io/vetload/corpus-generator@sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "source_commit": "0000000000000000000000000000000000000000",
+    "platform": "linux/amd64"
+  },
+  "test_limits": {
+    "max_file_bytes": 10485760,
+    "max_image_pixels": 100000000,
+    "max_image_width": 65535,
+    "max_image_height": 65535
+  },
+  "files": [
+    {
+      "path": "orientation/jpeg-orientation-6.jpg",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bytes": 0,
+      "claimed": {
+        "name": "jpeg-orientation-6.jpg",
+        "mime": "image/jpeg"
+      },
+      "origin": {
+        "type": "generated",
+        "generator": "generators/image/orientation.py:jpeg_orientation",
+        "params": {
+          "orientation": 6,
+          "width": 640,
+          "height": 480
+        }
+      },
+      "license": {
+        "spdx": "CC0-1.0"
+      },
+      "categories": [
+        "orientation"
+      ],
+      "introduced_in": "0.1.0",
+      "description": "Baseline JPEG stored landscape with EXIF orientation 6, displayed portrait.",
+      "expected": {
+        "outcome": "success",
+        "kind": "image",
+        "mime": "image/jpeg",
+        "mismatch": false,
+        "dimensions": {
+          "stored": {
+            "width": 640,
+            "height": 480
+          },
+          "display": {
+            "width": 480,
+            "height": 640
+          }
+        }
+      },
+      "facts": {
+        "orientation": 6,
+        "color_model": "rgb",
+        "bit_depth": 8
+      },
+      "revision": 1
+    },
+    {
+      "path": "mislabelled/heic-named-jpg.jpg",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bytes": 0,
+      "claimed": {
+        "name": "heic-named-jpg.jpg",
+        "mime": "image/jpeg"
+      },
+      "origin": {
+        "type": "generated",
+        "generator": "generators/image/heic.py:heic_photo",
+        "params": {
+          "width": 1024,
+          "height": 768
+        }
+      },
+      "license": {
+        "spdx": "CC0-1.0"
+      },
+      "categories": [
+        "mislabelled"
+      ],
+      "introduced_in": "0.1.0",
+      "description": "HEIC still image uploaded with a .jpg name and image/jpeg, the everyday iPhone case.",
+      "expected": {
+        "outcome": "success",
+        "kind": "image",
+        "mime": "image/heic",
+        "mismatch": true,
+        "dimensions": {
+          "stored": {
+            "width": 1024,
+            "height": 768
+          },
+          "display": {
+            "width": 1024,
+            "height": 768
+          }
+        }
+      },
+      "revision": 1
+    },
+    {
+      "path": "truncated/jpeg-cut-at-50-percent.jpg",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bytes": 0,
+      "claimed": {
+        "name": "jpeg-cut-at-50-percent.jpg",
+        "mime": "image/jpeg"
+      },
+      "origin": {
+        "type": "generated",
+        "generator": "generators/common/cut.py:truncate",
+        "params": {
+          "fraction": 0.5
+        },
+        "derived_from": "baseline/jpeg-baseline.jpg"
+      },
+      "license": {
+        "spdx": "CC0-1.0"
+      },
+      "categories": [
+        "truncated"
+      ],
+      "introduced_in": "0.1.0",
+      "description": "Baseline JPEG cut at half its length, as when an upload is interrupted.",
+      "expected": {
+        "outcome": "corrupt_media",
+        "reason": "truncated",
+        "kind": "image",
+        "mime": "image/jpeg",
+        "mismatch": false,
+        "dimensions": {
+          "stored": {
+            "width": 1024,
+            "height": 768
+          },
+          "display": {
+            "width": 1024,
+            "height": 768
+          }
+        }
+      },
+      "revision": 1
+    },
+    {
+      "path": "empty/zero-bytes.jpg",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "claimed": {
+        "name": "zero-bytes.jpg",
+        "mime": "image/jpeg"
+      },
+      "origin": {
+        "type": "generated",
+        "generator": "generators/common/empty.py:zero_bytes"
+      },
+      "license": {
+        "spdx": "CC0-1.0"
+      },
+      "categories": [
+        "empty"
+      ],
+      "introduced_in": "0.1.0",
+      "description": "Zero-byte file claiming to be a JPEG.",
+      "expected": {
+        "outcome": "unsupported_type",
+        "reason": "empty_file",
+        "kind": null,
+        "mime": null,
+        "mismatch": null
+      },
+      "revision": 1
+    },
+    {
+      "path": "limits/png-header-60000x60000.png",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bytes": 0,
+      "claimed": {
+        "name": "png-header-60000x60000.png",
+        "mime": "image/png"
+      },
+      "origin": {
+        "type": "generated",
+        "generator": "generators/image/limits.py:png_declared_size",
+        "params": {
+          "width": 60000,
+          "height": 60000
+        }
+      },
+      "license": {
+        "spdx": "CC0-1.0"
+      },
+      "categories": [
+        "limits"
+      ],
+      "introduced_in": "0.1.0",
+      "description": "PNG whose IHDR declares 3.6 gigapixels with a tiny IDAT: a pixel bomb that is not live.",
+      "expected": {
+        "outcome": "image_too_large",
+        "reason": "pixel_limit",
+        "kind": "image",
+        "mime": "image/png",
+        "mismatch": false,
+        "dimensions": {
+          "stored": {
+            "width": 60000,
+            "height": 60000
+          },
+          "display": {
+            "width": 60000,
+            "height": 60000
+          }
+        }
+      },
+      "revision": 1
+    },
+    {
+      "path": "polyglot/gif-plus-jar.gif",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bytes": 0,
+      "claimed": {
+        "name": "gif-plus-jar.gif",
+        "mime": "image/gif"
+      },
+      "origin": {
+        "type": "generated",
+        "generator": "generators/security/polyglot.py:gifar"
+      },
+      "license": {
+        "spdx": "CC0-1.0"
+      },
+      "categories": [
+        "polyglot",
+        "trailing_data"
+      ],
+      "introduced_in": "0.1.0",
+      "description": "Valid GIF followed by a valid JAR whose central directory resolves: a GIFAR.",
+      "expected": {
+        "outcome": "success",
+        "kind": "image",
+        "mime": "image/gif",
+        "mismatch": false,
+        "risk_flags": [
+          "polyglot",
+          "trailing_data"
+        ],
+        "dimensions": {
+          "stored": {
+            "width": 16,
+            "height": 16
+          },
+          "display": {
+            "width": 16,
+            "height": 16
+          }
+        }
+      },
+      "facts": {
+        "secondary_signatures": [
+          "application/java-archive"
+        ]
+      },
+      "revision": 1
+    },
+    {
+      "path": "encrypted/pdf-aes256-user-password.pdf",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bytes": 0,
+      "claimed": {
+        "name": "pdf-aes256-user-password.pdf",
+        "mime": "application/pdf"
+      },
+      "origin": {
+        "type": "frozen",
+        "generator": "generators/document/pdf_encrypt.py:aes256_user",
+        "params": {
+          "user_password": "corpus"
+        },
+        "frozen_reason": "Example of the fallback if qpdf cannot make AES-256 salts reproducible."
+      },
+      "license": {
+        "spdx": "CC0-1.0"
+      },
+      "categories": [
+        "encrypted"
+      ],
+      "introduced_in": "0.1.0",
+      "description": "One-page PDF encrypted with AES-256 and a user password.",
+      "expected": {
+        "outcome": "encrypted",
+        "reason": "password_required",
+        "kind": "document",
+        "mime": "application/pdf",
+        "mismatch": false
+      },
+      "revision": 1
+    },
+    {
+      "path": "text/csv-formula-injection.csv",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "bytes": 0,
+      "claimed": {
+        "name": "csv-formula-injection.csv",
+        "mime": "text/csv"
+      },
+      "origin": {
+        "type": "generated",
+        "generator": "generators/text/csv.py:formula_injection",
+        "params": {
+          "cells": [
+            "=HYPERLINK(\"https://example.invalid\",\"x\")"
+          ]
+        }
+      },
+      "license": {
+        "spdx": "CC0-1.0"
+      },
+      "categories": [
+        "text",
+        "document_risk"
+      ],
+      "introduced_in": "0.1.0",
+      "description": "UTF-8 CSV with a formula-injection cell. Engines without the text kind expect unsupported_type.",
+      "expected": {
+        "outcome": "success",
+        "kind": "text",
+        "mime": "text/csv",
+        "mismatch": false,
+        "risk_flags": [
+          "csv_formula_injection"
+        ]
+      },
+      "facts": {
+        "text_encoding": "utf-8",
+        "bom": false,
+        "csv_delimiter": ","
+      },
+      "revision": 1
+    }
+  ]
+}

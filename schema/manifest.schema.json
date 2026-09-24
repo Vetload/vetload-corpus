@@ -1,0 +1,465 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:vetload:corpus:manifest:0.1.0-draft",
+  "title": "Vetload corpus manifest (DRAFT 0.1.0)",
+  "description": "DRAFT proposal, not yet stable. Describes every file in a corpus release. The expected block is C01's expected-result schema (contracts/schemas/corpus/expected-result.schema.json), vendored by checksum from the vetload-corpus-schema release artefact and referenced by its $id; this schema defines no outcome, reason, kind or risk-flag values of its own (ADR-0049 A1, A4). tools/verify.py checks values against the vendored registries export. Consumers must tolerate unknown enum values and unknown fields.",
+  "x-status": "draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "manifest_version",
+    "corpus_version",
+    "contracts_version",
+    "contracts_schema",
+    "generated_by",
+    "test_limits",
+    "files"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "manifest_version": {
+      "description": "Version of this schema. Major changes break consumers.",
+      "type": "string",
+      "pattern": "^0\\.1\\.0(-draft)?$"
+    },
+    "corpus_version": {
+      "description": "Semantic version of the corpus release, without the leading v of the git tag.",
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$"
+    },
+    "contracts_version": {
+      "description": "The contracts release (for example 0.1.0, tag contracts/v0.1.0) whose expected-result schema and registries export are vendored under schema/vendor/.",
+      "type": "string"
+    },
+    "generated_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generator_image",
+        "source_commit"
+      ],
+      "properties": {
+        "generator_image": {
+          "description": "Generator container pinned by digest, for example ghcr.io/vetload/corpus-generator@sha256:<64 hex>.",
+          "type": "string",
+          "pattern": "^[a-z0-9./_-]+@sha256:[0-9a-f]{64}$"
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "platform": {
+          "type": "string",
+          "enum": [
+            "linux/amd64"
+          ]
+        }
+      }
+    },
+    "test_limits": {
+      "description": "Limits that limit-dependent expectations assume. A consumer runs the corpus with these limits configured. They are test values, not plan limits. A value exactly at a limit passes.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_file_bytes",
+        "max_image_pixels",
+        "max_image_width",
+        "max_image_height"
+      ],
+      "properties": {
+        "max_file_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_image_pixels": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_image_width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_image_height": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/entry"
+      }
+    },
+    "contracts_schema": {
+      "description": "The vendored C01 artefact: its name and SHA-256, as recorded in schema/vendor/vetload-corpus-schema.lock.json.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset",
+        "sha256"
+      ],
+      "properties": {
+        "asset": {
+          "type": "string",
+          "pattern": "^vetload-corpus-schema-[0-9]+\\.[0-9]+\\.[0-9]+\\.tar\\.gz$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "bytes",
+        "claimed",
+        "origin",
+        "license",
+        "categories",
+        "introduced_in",
+        "description",
+        "expected",
+        "revision"
+      ],
+      "properties": {
+        "path": {
+          "description": "Stable identifier and location inside files/ of the release. ASCII, POSIX separators, no leading slash, no segment starting with a dot. The basename is the claimed file name.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-][A-Za-z0-9._-]*(/[A-Za-z0-9_-][A-Za-z0-9._-]*)*$",
+          "maxLength": 200
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "claimed": {
+          "description": "What an uploader claims. name is the basename of path; mime is the Content-Type a harness should send, or null to send none.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "name",
+            "mime"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "mime": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "oneOf": [
+            {
+              "description": "Rebuilt byte for byte by a generator on every CI run.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "generator"
+              ],
+              "properties": {
+                "type": {
+                  "const": "generated"
+                },
+                "generator": {
+                  "type": "string",
+                  "description": "Module and function, for example generators/image/orientation.py:jpeg_orientation"
+                },
+                "params": {
+                  "type": "object"
+                },
+                "derived_from": {
+                  "type": "string",
+                  "description": "path of the entry this one was cut or altered from"
+                }
+              }
+            },
+            {
+              "description": "Produced once by a recorded generator whose tool is not reproducible, then committed as bytes. Allowed only with a reason.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "generator",
+                "frozen_reason"
+              ],
+              "properties": {
+                "type": {
+                  "const": "frozen"
+                },
+                "generator": {
+                  "type": "string"
+                },
+                "params": {
+                  "type": "object"
+                },
+                "frozen_reason": {
+                  "type": "string",
+                  "minLength": 10
+                }
+              }
+            },
+            {
+              "description": "Third-party sample kept under its own licence.",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "source_url",
+                "upstream_sha256",
+                "retrieved"
+              ],
+              "properties": {
+                "type": {
+                  "const": "third_party"
+                },
+                "source_url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "upstream_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                "retrieved": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "modified": {
+                  "type": "string",
+                  "description": "What was changed, if anything"
+                }
+              }
+            }
+          ]
+        },
+        "license": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "spdx"
+          ],
+          "properties": {
+            "spdx": {
+              "type": "string",
+              "description": "SPDX licence expression. Generated files are CC0-1.0."
+            },
+            "attribution": {
+              "type": "string"
+            },
+            "license_file": {
+              "type": "string",
+              "description": "Path inside LICENSES/ of the release"
+            }
+          }
+        },
+        "categories": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/category"
+          }
+        },
+        "introduced_in": {
+          "type": "string",
+          "description": "corpus_version in which this path first appeared"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300
+        },
+        "expected": {
+          "description": "C01's CorpusExpectedResult. The outcome is the one a fully capable engine returns when it supports the verified format; consumers whose engine does not support it expect unsupported_type with reason recognised_unsupported (ADR-0002).",
+          "$ref": "https://vetload.com/schemas/corpus/v0/expected-result.schema.json"
+        },
+        "facts": {
+          "$ref": "#/$defs/facts"
+        },
+        "revision": {
+          "description": "Revision of this entry's expected block and facts. Starts at 1; incremented whenever any of them changes (ADR-0002). File bytes never change for a released path.",
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "baseline",
+        "mislabelled",
+        "orientation",
+        "colour",
+        "animation",
+        "limits",
+        "empty",
+        "truncated",
+        "malformed",
+        "encrypted",
+        "document_risk",
+        "polyglot",
+        "trailing_data",
+        "video",
+        "audio",
+        "text",
+        "unsupported",
+        "jpeg",
+        "tiff",
+        "provenance",
+        "hdr",
+        "new_kind"
+      ]
+    },
+    "facts": {
+      "description": "Small closed vocabulary of key facts beyond C01's expected block. Names are corpus-local; C06 maps them to result-document paths. duration_ms compares within 50 ms.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "orientation": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "maximum": 8
+        },
+        "frames": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "animated": {
+          "type": "boolean"
+        },
+        "loop_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "0 means loop forever"
+        },
+        "color_model": {
+          "type": "string",
+          "enum": [
+            "rgb",
+            "gray",
+            "cmyk",
+            "palette"
+          ]
+        },
+        "icc_profile": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bit_depth": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "alpha": {
+          "type": "boolean"
+        },
+        "progressive": {
+          "type": "boolean"
+        },
+        "exif_gps_present": {
+          "type": "boolean"
+        },
+        "page_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pdf_permissions_restricted": {
+          "type": "boolean"
+        },
+        "fast_start": {
+          "type": "boolean"
+        },
+        "fragmented": {
+          "type": "boolean"
+        },
+        "video_rotation": {
+          "enum": [
+            0,
+            90,
+            180,
+            270
+          ]
+        },
+        "vfr": {
+          "type": "boolean"
+        },
+        "video_codec": {
+          "type": "string"
+        },
+        "audio_codec": {
+          "type": "string"
+        },
+        "video_streams": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "audio_streams": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "subtitle_streams": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sample_rate_hz": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "channels": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "trailing_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "secondary_signatures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "text_encoding": {
+          "type": "string",
+          "description": "WHATWG Encoding Standard label, lowercase"
+        },
+        "bom": {
+          "type": "boolean"
+        },
+        "csv_delimiter": {
+          "type": "string",
+          "maxLength": 1
+        }
+      }
+    }
+  }
+}
