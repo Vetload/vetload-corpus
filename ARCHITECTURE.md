@@ -2,12 +2,13 @@
 
 A versioned, reproducible set of awkward files, each paired with the stable truths a truthful inspector must report. It is the engine's regression suite, customers' CI fixture set and a benchmark's ground truth. Data plus generators; nothing runs in production.
 
-Decisions: [ADR-0001 generator runtime](docs/architecture/decisions/0001-generator-runtime-and-container.md), [ADR-0002 expectation versioning](docs/architecture/decisions/0002-expected-result-versioning.md), [ADR-0003 release format](docs/architecture/decisions/0003-release-format-and-consumption.md). First files: [seed corpus](docs/seed-corpus.md). Schema draft: [`schema/manifest.schema.json`](schema/manifest.schema.json).
+Decisions: [ADR-0049 Wave 1 alignment](https://github.com/Vetload/vetload-platform/blob/main/docs/architecture/decisions/0049-wave-1-alignment.md) (program, overrides), [ADR-0001 generator runtime](docs/architecture/decisions/0001-generator-runtime-and-container.md), [ADR-0002 expectation versioning](docs/architecture/decisions/0002-expected-result-versioning.md), [ADR-0003 release format](docs/architecture/decisions/0003-release-format-and-consumption.md). First files: [seed corpus](docs/seed-corpus.md). Schema draft: [`schema/manifest.schema.json`](schema/manifest.schema.json).
 
 ## Modules
 
 | Path | Role |
 | --- | --- |
+| `schema/vendor/` | C01's `vetload-corpus-schema` files and `contracts.lock`, vendored by checksum |
 | `specs/<category>.yaml` | Hand-written entries: path, generator, parameters, licence, `expected` |
 | `generators/<area>/` | Python functions `(params, rng) -> bytes`, seeded per path |
 | `thirdparty/<name>/` | Third-party samples with upstream licence and URL |
@@ -22,7 +23,7 @@ Decisions: [ADR-0001 generator runtime](docs/architecture/decisions/0001-generat
 
 ## Data model and access patterns
 
-A header (`manifest_version`, `corpus_version`, `contracts_version`, `generated_by` image digest and commit, `test_limits`) and one entry per file: `path` (stable ID; basename is the claimed name), `sha256`, `bytes`, `claimed`, `origin` (generated, frozen, third party), `license` (SPDX), `categories`, `introduced_in`, `description`, `expected`. `expected` holds file truths only: `outcome`, `reason`, `kind`, `mime`, `mismatch`, `dimensions {stored, display}`, `risk_flags`, closed-vocabulary `facts`, `revision`. Consumers gate outcomes by their own capabilities (ADR-0002).
+A header (`manifest_version`, `corpus_version`, `contracts_version`, `contracts_schema`, `generated_by`, `test_limits`) and one entry per file: `path` (stable ID; basename is the claimed name), `sha256`, `bytes`, `claimed`, `origin` (generated, frozen, third party), `license` (SPDX), `categories`, `introduced_in`, `description`, `expected`, `facts`, `revision`. `expected` is C01's expected-result schema, `$ref`ed and never redefined: outcome, reason, kind (`null` when nothing matched), MIME, format, mismatch, dimensions `{stored, display}`, risk flags (ADR-0049 A1 to A4). Consumers gate outcomes by their own capabilities (ADR-0002).
 
 Consumers read the whole manifest and key on `path`, never on a header hash, because truncated and renamed variants share leading bytes.
 
@@ -87,9 +88,7 @@ The brief asks for files that cover "every outcome". `processing_timeout` and `p
 
 | Name | Kind | Exact identifier | Owner | Phase |
 | --- | --- | --- | --- | --- |
-| Outcome and reason registry | file format (public copy) | values from `contracts/codes/outcomes.yaml` | C01 | Wave 1 |
-| Risk flag registry | file format (public copy) | codes from `contracts/codes/risk-flags.yaml` | C01 (content with C15) | Wave 1 |
-| Kind enum and canonical MIME list | file format (public copy) | from `contracts/schemas/result-document/` | C01, C05 | Wave 1 |
+| Corpus schema | release artefact, vendored | `vetload-corpus-schema-<v>.tar.gz` from `contracts/v<v>`: `expected-result.schema.json`, registries JSON, MIME list; pinned in `schema/vendor/contracts.lock` | C01 | Wave 1 |
 | Capabilities export | file format | C06's format support matrix, used by consumers for gating, not by this repository | C06 | P0 |
 
 The corpus does not use C03's native image, on purpose (ADR-0001).
@@ -97,28 +96,28 @@ The corpus does not use C03's native image, on purpose (ADR-0001).
 ## Data owned
 
 - GitHub Releases and tags `v*` of `Vetload/vetload-corpus`. Assets are named as in ADR-0003 and never replaced.
-- The GHCR package `ghcr.io/vetload/corpus-generator`, tagged by corpus commit and always referenced by digest.
+- The GHCR package `ghcr.io/vetload/corpus-generator`, referenced by digest; the founder makes it public after its first publish (ADR-0049 F5).
 - Repository paths: `specs/`, `generators/`, `thirdparty/`, `frozen/`, `schema/`, `tools/`, `container/`, `benchmark/`, `manifest.json`.
 - No AWS resources, tables, buckets or parameters.
 
 ## Contract needs
 
-Listed in full in Vetload/vetload-platform#39.
+Settled by [ADR-0049](https://github.com/Vetload/vetload-platform/blob/main/docs/architecture/decisions/0049-wave-1-alignment.md) A1 to A4 after Vetload/vetload-platform#39: C01's reason and kind values (`recognised_unsupported`, `empty_file`, `size_limit`, `dimension_limit`, `kind: null`), the flag code `office_external_references`, and one expected-result schema in the `vetload-corpus-schema` artefact. Still open in #39:
 
-1. **Confirm or rename the values used:** the eight outcomes; reasons `truncated`, `malformed`, `unrecognised`, `not_supported`, `empty`, `byte_limit`, `pixel_limit`, `password_required`, scoped by outcome; kinds `image`, `video`, `audio`, `document`, `text`, `archive`, `unknown`; the ten risk flag codes and 34 MIME values listed in the [seed corpus](docs/seed-corpus.md).
-2. **A public, machine-readable export of those registries plus the canonical MIME list**, tagged with the contracts version. The values are public in API responses anyway, and it lets this public repository copy them without a git reference.
-3. **Decide:** the outcome for zero-byte files; `mismatch` as `null` when the claim has no type; whether `.mp4` for `audio/mp4` and `.png` for APNG count as mismatches; the MIME for encrypted OOXML packages; `audio/wav` or `audio/vnd.wave`; and the names for dimensions, which we propose as `stored` and `display` objects.
+1. C01 publishes that artefact with `dimensions {stored, display}` and the registries export.
+2. Confirm `mismatch: null` when nothing was identified, and which limit reason wins when a file exceeds both pixel and side limits (the seed avoids such files).
+3. C05's `formats.json` supplies `format` IDs and the MIME of CFB-encrypted OOXML.
 
 ## Assumptions about other Wave 1 components
 
-- **C01** tags v0 registries that contain these values or close ones. Renames cost the corpus a minor release before 1.0.
-- **C06** pins the corpus by version and archive hash, owns golden documents and known deviations, maps the corpus's fact names to result-document paths, applies capability gating, and reviews the † rows in the seed list.
-- **C05** consumes the same release and compares kind, MIME and stored dimensions. Any read-budget field it needs is added to `facts` in a minor release.
+- **C01** tags `contracts/v0.1.0` with the corpus schema before the corpus tags `v0.1.0` (ADR-0049 E4).
+- **C06** pins the corpus by version and archive hash, owns golden documents and known deviations, maps the corpus's fact names to result-document paths, applies capability gating, and reviews the † rows.
+- **C05** consumes the same release and compares kind, MIME, format and stored dimensions.
 - **C02, C03, C07, C08, C09** have no interface with the corpus in Wave 1.
 
 ## Gate G1 deliverable
 
-**Release `v0.1.0` of `Vetload/vetload-corpus`**, containing about 150 files (166 are listed) and the assets `vetload-corpus-0.1.0.tar.gz`, `manifest.json`, `manifest.schema.json` and `SHA256SUMS`, all attested.
+**Release `v0.1.0` of `Vetload/vetload-corpus`**, tagged after `contracts/v0.1.0`, with 167 files and the assets `vetload-corpus-0.1.0.tar.gz`, `manifest.json`, `manifest.schema.json` and `SHA256SUMS`, all attested.
 
 **Proof it is done:** a clean workflow on a fresh runner downloads the assets, and each of these steps passes:
 
@@ -128,4 +127,4 @@ Listed in full in Vetload/vetload-platform#39.
 - `tools/fetch.py`, which checks every file hash and has a tampered-byte control that must fail
 - the coverage check: every launch kind, and all six file-determined outcomes, appear
 
-The determinism workflow must be green on the tagged commit, and the archive rebuilt from the tag must be byte-identical. C06 confirms that its test harness has loaded the release.
+The determinism workflow must be green on the tagged commit, and the archive rebuilt from the tag must be byte-identical. C06 loading the release is a tracker follow-up, not a precondition (ADR-0049 G1).

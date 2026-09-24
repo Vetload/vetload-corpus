@@ -10,15 +10,17 @@ The playbook says consumers depend across repositories only on published artefac
 
 ## Decision
 
-**Versions and tags.** Semver, tagged `vX.Y.Z` on a commit on `main`, with meanings as in [ADR-0002](0002-expected-result-versioning.md). The seed corpus for gate G1 is `v0.1.0`. `v1.0.0` is the public launch release in P1. Pushing a tag starts the release workflow. That workflow regenerates everything in the pinned generator image, checks every hash against the committed `manifest.json`, and only then uploads.
+**Versions and tags.** Semver, tagged `vX.Y.Z` on a commit on `main`, with meanings as in [ADR-0002](0002-expected-result-versioning.md). The seed corpus for gate G1 is `v0.1.0`, and **it is tagged only after `contracts/v0.1.0` exists** ([ADR-0049](https://github.com/Vetload/vetload-platform/blob/main/docs/architecture/decisions/0049-wave-1-alignment.md) E4). `v1.0.0` is the public launch release in P1. Pushing a tag starts the release workflow. That workflow regenerates everything in the pinned generator image, checks every hash against the committed `manifest.json`, and only then uploads.
 
-**Assets of every release** (names are fixed; `X.Y.Z` has no leading `v`):
+**Vendored contracts.** `vetload-platform` is private, so this repository cannot download C01's artefact anonymously. Instead, a maintainer or a workflow holding a read-only token downloads `vetload-corpus-schema-<v>.tar.gz` from the `contracts/v<v>` release and verifies it against that release's `SHA256SUMS`. It then commits the contents (`expected-result.schema.json`, the registries as JSON, and the canonical MIME list) under `schema/vendor/`, together with `schema/vendor/contracts.lock`, which names the version, the artefact's SHA-256 and each file's SHA-256. Corpus CI re-checks the vendored files against `contracts.lock`, and `manifest.schema.json` refers to the expected-result schema by its `$id` ([ADR-0049](https://github.com/Vetload/vetload-platform/blob/main/docs/architecture/decisions/0049-wave-1-alignment.md) A4; C01's ADR-0016).
+
+**Assets of every release** (names are fixed, [ADR-0049](https://github.com/Vetload/vetload-platform/blob/main/docs/architecture/decisions/0049-wave-1-alignment.md) E4; `X.Y.Z` has no leading `v`):
 
 | Asset | Contents |
 | --- | --- |
-| `vetload-corpus-X.Y.Z.tar.gz` | One top directory, `vetload-corpus-X.Y.Z/`, containing `manifest.json`, `files/<path>`, `LICENSES/`, `NOTICE.md` and `README.md` |
+| `vetload-corpus-X.Y.Z.tar.gz` | One top directory, `vetload-corpus-X.Y.Z/`, containing `manifest.json`, `files/<path>`, `schema/` (the manifest schema plus the vendored C01 files and `contracts.lock`), `LICENSES/`, `NOTICE.md` and `README.md` |
 | `manifest.json` | The same manifest, so a consumer can read it without downloading everything |
-| `manifest.schema.json` | The JSON Schema 2020-12 the manifest validates against |
+| `manifest.schema.json` | The JSON Schema 2020-12 the manifest validates against. It `$ref`s C01's expected-result schema, which is inside the archive |
 | `expectations-diff.json` | Entries added, and expectations changed or removed, since the previous release (from `0.2.0`) |
 | `SHA256SUMS` | GNU coreutils format: one line per other asset, `<64 lowercase hex><two spaces><asset name>`, sorted by name, LF line endings. Checked with `sha256sum -c SHA256SUMS` |
 | `vetload-corpus-av-X.Y.Z.tar.gz` | From P1: EICAR antivirus test files only, kept apart so security tools do not quarantine the main archive |
@@ -39,7 +41,7 @@ The playbook says consumers depend across repositories only on published artefac
 7. Cache by the pinned hash, for example as an `actions/cache` key.
 8. Run the engine or library with the manifest's `test_limits`, apply the capability gating and flag subsetting from ADR-0002, and compare.
 
-C05 compares kind, MIME and stored dimensions only, for both its C# library and its browser package. C06 compares every expected field and keeps its full golden documents keyed by `path`.
+C05 compares kind, MIME, format and stored dimensions only, for both its C# library and its browser package. C06 compares every expected field and keeps its full golden documents keyed by `path`. C06's confirmation that its harness loaded a release is a follow-up item on the tracker, not a condition of the release ([ADR-0049](https://github.com/Vetload/vetload-platform/blob/main/docs/architecture/decisions/0049-wave-1-alignment.md) G1).
 
 ## Options considered
 

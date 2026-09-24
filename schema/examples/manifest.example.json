@@ -1,7 +1,11 @@
 {
   "manifest_version": "0.1.0-draft",
   "corpus_version": "0.0.0-example",
-  "contracts_version": "proposal",
+  "contracts_version": "0.1.0",
+  "contracts_schema": {
+    "asset": "vetload-corpus-schema-0.1.0.tar.gz",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
   "generated_by": {
     "generator_image": "ghcr.io/vetload/corpus-generator@sha256:0000000000000000000000000000000000000000000000000000000000000000",
     "source_commit": "0000000000000000000000000000000000000000",
@@ -9,7 +13,9 @@
   },
   "test_limits": {
     "max_file_bytes": 10485760,
-    "max_image_pixels": 100000000
+    "max_image_pixels": 100000000,
+    "max_image_width": 65535,
+    "max_image_height": 65535
   },
   "files": [
     {
@@ -39,12 +45,9 @@
       "description": "Baseline JPEG stored landscape with EXIF orientation 6, displayed portrait.",
       "expected": {
         "outcome": "success",
-        "reason": null,
         "kind": "image",
         "mime": "image/jpeg",
         "mismatch": false,
-        "risk_flags": [],
-        "revision": 1,
         "dimensions": {
           "stored": {
             "width": 640,
@@ -54,13 +57,14 @@
             "width": 480,
             "height": 640
           }
-        },
-        "facts": {
-          "orientation": 6,
-          "color_model": "rgb",
-          "bit_depth": 8
         }
-      }
+      },
+      "facts": {
+        "orientation": 6,
+        "color_model": "rgb",
+        "bit_depth": 8
+      },
+      "revision": 1
     },
     {
       "path": "mislabelled/heic-named-jpg.jpg",
@@ -88,19 +92,17 @@
       "description": "HEIC still image uploaded with a .jpg name and image/jpeg, the everyday iPhone case.",
       "expected": {
         "outcome": "success",
-        "reason": null,
         "kind": "image",
         "mime": "image/heic",
         "mismatch": true,
-        "risk_flags": [],
-        "revision": 1,
         "dimensions": {
           "stored": {
             "width": 1024,
             "height": 768
           }
         }
-      }
+      },
+      "revision": 1
     },
     {
       "path": "truncated/jpeg-cut-at-50-percent.jpg",
@@ -132,15 +134,14 @@
         "kind": "image",
         "mime": "image/jpeg",
         "mismatch": false,
-        "risk_flags": [],
-        "revision": 1,
         "dimensions": {
           "stored": {
             "width": 1024,
             "height": 768
           }
         }
-      }
+      },
+      "revision": 1
     },
     {
       "path": "empty/zero-bytes.jpg",
@@ -164,28 +165,27 @@
       "description": "Zero-byte file claiming to be a JPEG.",
       "expected": {
         "outcome": "unsupported_type",
-        "reason": "empty",
-        "kind": "unknown",
-        "mime": "application/octet-stream",
-        "mismatch": null,
-        "risk_flags": [],
-        "revision": 1
-      }
+        "reason": "empty_file",
+        "kind": null,
+        "mime": null,
+        "mismatch": null
+      },
+      "revision": 1
     },
     {
-      "path": "limits/png-header-100000x100000.png",
+      "path": "limits/png-header-60000x60000.png",
       "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
       "bytes": 0,
       "claimed": {
-        "name": "png-header-100000x100000.png",
+        "name": "png-header-60000x60000.png",
         "mime": "image/png"
       },
       "origin": {
         "type": "generated",
         "generator": "generators/image/limits.py:png_declared_size",
         "params": {
-          "width": 100000,
-          "height": 100000
+          "width": 60000,
+          "height": 60000
         }
       },
       "license": {
@@ -195,22 +195,21 @@
         "limits"
       ],
       "introduced_in": "0.1.0",
-      "description": "PNG whose IHDR declares 10 gigapixels with a tiny IDAT: a pixel bomb that is not live.",
+      "description": "PNG whose IHDR declares 3.6 gigapixels with a tiny IDAT: a pixel bomb that is not live.",
       "expected": {
         "outcome": "image_too_large",
         "reason": "pixel_limit",
         "kind": "image",
         "mime": "image/png",
         "mismatch": false,
-        "risk_flags": [],
-        "revision": 1,
         "dimensions": {
           "stored": {
-            "width": 100000,
-            "height": 100000
+            "width": 60000,
+            "height": 60000
           }
         }
-      }
+      },
+      "revision": 1
     },
     {
       "path": "polyglot/gif-plus-jar.gif",
@@ -235,7 +234,6 @@
       "description": "Valid GIF followed by a valid JAR whose central directory resolves: a GIFAR.",
       "expected": {
         "outcome": "success",
-        "reason": null,
         "kind": "image",
         "mime": "image/gif",
         "mismatch": false,
@@ -243,19 +241,19 @@
           "polyglot",
           "trailing_data"
         ],
-        "revision": 1,
         "dimensions": {
           "stored": {
             "width": 16,
             "height": 16
           }
-        },
-        "facts": {
-          "secondary_signatures": [
-            "application/java-archive"
-          ]
         }
-      }
+      },
+      "facts": {
+        "secondary_signatures": [
+          "application/java-archive"
+        ]
+      },
+      "revision": 1
     },
     {
       "path": "encrypted/pdf-aes256-user-password.pdf",
@@ -286,10 +284,9 @@
         "reason": "password_required",
         "kind": "document",
         "mime": "application/pdf",
-        "mismatch": false,
-        "risk_flags": [],
-        "revision": 1
-      }
+        "mismatch": false
+      },
+      "revision": 1
     },
     {
       "path": "text/csv-formula-injection.csv",
@@ -319,20 +316,19 @@
       "description": "UTF-8 CSV with a formula-injection cell. Engines without the text kind expect unsupported_type.",
       "expected": {
         "outcome": "success",
-        "reason": null,
         "kind": "text",
         "mime": "text/csv",
         "mismatch": false,
         "risk_flags": [
           "csv_formula_injection"
-        ],
-        "revision": 1,
-        "facts": {
-          "text_encoding": "utf-8",
-          "bom": false,
-          "csv_delimiter": ","
-        }
-      }
+        ]
+      },
+      "facts": {
+        "text_encoding": "utf-8",
+        "bom": false,
+        "csv_delimiter": ","
+      },
+      "revision": 1
     }
   ]
 }

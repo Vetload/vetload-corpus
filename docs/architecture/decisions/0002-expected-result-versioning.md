@@ -14,10 +14,12 @@ The brief asks how expected results are versioned when the engine deliberately c
 
 ## Decision
 
-1. **Expectations describe the file, not an engine.** `expected.outcome` is what a fully capable engine returns when it supports `expected.mime`. A consumer whose engine does not support that MIME expects `unsupported_type` with reason `not_supported` instead, and works that out from its own capability list. For the engine, that list is C06's capabilities export. Formats that Vetload never decodes, such as GIMP `.xcf`, carry `unsupported_type` directly.
+The `expected` block of each entry is C01's `CorpusExpectedResult` (`contracts/schemas/corpus/expected-result.schema.json`), vendored by checksum. Every outcome, reason, kind and risk-flag value comes from C01's registries, and the corpus defines none of its own. The corpus-only `facts` and `revision` sit beside `expected`, not inside it ([ADR-0049](https://github.com/Vetload/vetload-platform/blob/main/docs/architecture/decisions/0049-wave-1-alignment.md) A1, A4).
+
+1. **Expectations describe the file, not an engine.** `expected.outcome` is what a fully capable engine returns when it supports the verified format. A consumer whose engine does not support that format expects `unsupported_type` with reason `recognised_unsupported` instead, and works that out from its own capability list. For the engine, that list is C06's capabilities export. Formats that Vetload never decodes, such as GIMP `.xcf`, carry `unsupported_type` directly.
 2. **Risk flags are an exact set.** A consumer asserts `actual flags == expected flags ∩ codes my engine implements`. Flags that are not implemented yet are skipped, not failed. Any extra flag fails.
 3. **Limit-dependent outcomes** are stated against the manifest's `test_limits`. Consumers configure those limits when they run the corpus.
-4. **When the corpus is wrong,** the fix is a corpus change. The entry's `expected.revision` goes up by one. Each release ships `expectations-diff.json`, computed by diffing against the previous manifest, so nobody has to maintain it by hand.
+4. **When the corpus is wrong,** the fix is a corpus change. The entry's `revision`, which covers `expected` and `facts`, goes up by one. Each release ships `expectations-diff.json`, computed by diffing against the previous manifest, so nobody has to maintain it by hand.
 5. **When the engine is wrong or not finished,** the corpus does not change. The consumer records a known deviation next to its own tests. For the engine that is `engine/tests/golden/`. The deviation is removed when the engine catches up. Known deviations never live in this public repository.
 6. **When the engine improves a fact the corpus does not carry,** such as a finer colour-space label, only C06's golden documents change. This is why the expected block stays small.
 7. **A released file's bytes never change.** A path is immutable. To change the bytes, add a new path. A path is removed only in a major release.
@@ -36,7 +38,7 @@ The brief asks how expected results are versioned when the engine deliberately c
 ## Consequences
 
 - Easier: a corpus release never has to wait for an engine release, and the other way round. Customers read the same truth the engine is tested against.
-- Harder: C06 and C05 each implement gating (a few lines) and keep a deviation list. C01 must keep reason and flag codes stable, because a renamed code is a major change here.
+- Harder: C06 and C05 each implement gating (a few lines) and keep a deviation list. C01 must keep reason and flag codes stable. A renamed code reaches the corpus as a new vendored `vetload-corpus-schema` version, and every affected entry gets a revision bump.
 - **Cost:** none. It is data and a diff script.
 
 ## Revisit when
