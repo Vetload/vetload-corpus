@@ -91,7 +91,7 @@ Every check is shown failing once, on purpose, in the pull request that adds it.
 ## Open questions
 
 1. Should the corpus record C05's range-read budget per file (`reads_used`), or does C05 keep that on its side? (C05)
-2. Does a file exactly at a limit pass? Rows 73, 76 and 77 of the seed list assume it does. Which reason wins when a file exceeds both the pixel and the side limit? The seed avoids such files. (C01, C06)
+2. Which reason wins when a file exceeds both the pixel and the side limit? The seed avoids such files. (C01 confirmed on #39 that limits are inclusive maxima, so a file exactly at a limit passes.) (C01, C06)
 3. Which exact `facts` names does C06 want, and how do they map to result-document paths? (C06)
 4. Does C10's test mode (P1) identify corpus files by `sha256` from this manifest? If so, the manifest is its lookup table, and paths stay immutable. (C10, wave 2)
 

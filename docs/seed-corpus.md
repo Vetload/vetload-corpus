@@ -12,7 +12,7 @@
 - **Mismatch** compares C05 format IDs, so an audio-only MP4 named `.mp4` and an APNG named `.png` are not mismatches. It is `null` when the claim carries no type information, such as no extension and no claimed MIME, or when nothing could be identified.
 - Outcome, reason, kind and risk-flag values are C01's (`contracts/codes/*.yaml`, ADR-0049 A1 and A2); a zero-byte file is `unsupported_type` with reason `empty_file`.
 - **Test limits** are part of the manifest: `max_file_bytes` 10,485,760, `max_image_pixels` 100,000,000, and `max_image_width` and `max_image_height` 65,535. A value exactly at a limit passes. They are test values chosen to keep the release small, not plan limits. A consumer configures its engine with them when it runs the corpus.
-- Dimensions are 1024x768 for still images, 640x360 for video and 3 seconds for media, unless the row says otherwise.
+- Dimensions are 1024x768 for still images, 640x360 for video and 3 seconds for media, unless the row says otherwise. **Every expected `dimensions` states both `stored` and `display` explicitly**, because the corpus is a test oracle. They are equal unless the row gives a different display size, for example for EXIF orientations 5 to 8 or rotated video. A row that gives one size, such as "stored 60000x60000", means both.
 
 ## Coverage
 
@@ -51,7 +51,7 @@ Total: **167 files**, of which 25 marked † and 12 marked ‡.
 
 Risk flag codes used: `csv_formula_injection`, `office_dde`, `office_external_references`, `office_macros`, `office_ole_objects`, `pdf_embedded_files`, `pdf_javascript`, `polyglot`, `trailing_data`.
 
-Verified MIME values used: `application/pdf`, `application/vnd.ms-excel.sheet.macroEnabled.12`, `application/vnd.ms-word.document.macroEnabled.12`, `application/vnd.openxmlformats-officedocument.presentationml.presentation`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `application/zip`, `audio/flac`, `audio/mp4`, `audio/mpeg`, `audio/ogg`, `audio/wav`, `image/avif`, `image/bmp`, `image/gif`, `image/heic`, `image/jpeg`, `image/jxl`, `image/png`, `image/svg+xml`, `image/tiff`, `image/vnd.adobe.photoshop`, `image/webp`, `image/x-xcf`, `text/csv`, `text/plain`, `video/mp4`, `video/quicktime`, `video/webm`, `video/x-matroska`. The verified MIME of the two encrypted OOXML packages is the value C05's `formats.json` assigns to a CFB-encrypted package, still pending. Secondary signatures in facts also use `application/java-archive` and `text/html`.
+Verified MIME values used: `application/pdf`, `application/vnd.ms-excel.sheet.macroEnabled.12`, `application/vnd.ms-word.document.macroEnabled.12`, `application/vnd.openxmlformats-officedocument.presentationml.presentation`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document`, `application/x-ole-storage`, `application/zip`, `audio/flac`, `audio/mp4`, `audio/mpeg`, `audio/ogg`, `audio/wav`, `image/avif`, `image/bmp`, `image/gif`, `image/heic`, `image/jpeg`, `image/jxl`, `image/png`, `image/svg+xml`, `image/tiff`, `image/vnd.adobe.photoshop`, `image/webp`, `image/x-xcf`, `text/csv`, `text/plain`, `video/mp4`, `video/quicktime`, `video/webm`, `video/x-matroska`. `application/x-ole-storage` for the two encrypted OOXML packages is provisional until C05's `formats.json` exists (approved by C01 on vetload-platform#39). Secondary signatures in facts also use `application/java-archive` and `text/html`.
 
 ## Files
 
@@ -215,8 +215,8 @@ Verified MIME values used: `application/pdf`, `application/vnd.ms-excel.sheet.ma
 | 109 | `encrypted/pdf-aes256-user-password.pdf` | AES-256 with a user password | `encrypted / password_required` | document | `application/pdf` | no |  |
 | 110 | `encrypted/pdf-rc4-128-user-password.pdf` | RC4 128-bit with a user password | `encrypted / password_required` | document | `application/pdf` | no |  |
 | 111 | `encrypted/pdf-owner-password-only.pdf` | Owner password only; opens without a password | `success` | document | `application/pdf` | no | pdf_permissions_restricted=true; page_count=1 |
-| 112 | `encrypted/docx-agile-encrypted.docx` | ECMA-376 agile encryption: a CFB container | `encrypted / password_required` † | document | C05 CFB MIME, pending | no |  |
-| 113 | `encrypted/xlsx-agile-encrypted.xlsx` | ECMA-376 agile encryption: a CFB container | `encrypted / password_required` † | document | C05 CFB MIME, pending | no |  |
+| 112 | `encrypted/docx-agile-encrypted.docx` | ECMA-376 agile encryption: a CFB container; MIME provisional until C05 `formats.json` | `encrypted / password_required` † | document | `application/x-ole-storage` | no |  |
+| 113 | `encrypted/xlsx-agile-encrypted.xlsx` | ECMA-376 agile encryption: a CFB container; MIME provisional until C05 `formats.json` | `encrypted / password_required` † | document | `application/x-ole-storage` | no |  |
 
 ### Document risk
 

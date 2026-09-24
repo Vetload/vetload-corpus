@@ -301,7 +301,24 @@
           "type": "integer",
           "minimum": 1
         }
-      }
+      },
+      "allOf": [
+        {
+          "description": "Corpus rule on top of C01's schema: every expected dimensions states both stored and display, equal when orientation is 1.",
+          "properties": {
+            "expected": {
+              "properties": {
+                "dimensions": {
+                  "required": [
+                    "stored",
+                    "display"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     "category": {
       "type": "string",

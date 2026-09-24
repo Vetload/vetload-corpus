@@ -99,6 +99,10 @@
           "stored": {
             "width": 1024,
             "height": 768
+          },
+          "display": {
+            "width": 1024,
+            "height": 768
           }
         }
       },
@@ -136,6 +140,10 @@
         "mismatch": false,
         "dimensions": {
           "stored": {
+            "width": 1024,
+            "height": 768
+          },
+          "display": {
             "width": 1024,
             "height": 768
           }
@@ -206,6 +214,10 @@
           "stored": {
             "width": 60000,
             "height": 60000
+          },
+          "display": {
+            "width": 60000,
+            "height": 60000
           }
         }
       },
@@ -243,6 +255,10 @@
         ],
         "dimensions": {
           "stored": {
+            "width": 16,
+            "height": 16
+          },
+          "display": {
             "width": 16,
             "height": 16
           }

@@ -104,9 +104,9 @@ The corpus does not use C03's native image, on purpose (ADR-0001).
 
 Settled by [ADR-0049](https://github.com/Vetload/vetload-platform/blob/main/docs/architecture/decisions/0049-wave-1-alignment.md) A1 to A4 after Vetload/vetload-platform#39: C01's reason and kind values (`recognised_unsupported`, `empty_file`, `size_limit`, `dimension_limit`, `kind: null`), the flag code `office_external_references`, and one expected-result schema in the `vetload-corpus-schema` artefact. Still open in #39:
 
-1. C01 publishes that artefact with `dimensions {stored, display}` and the registries export.
-2. Confirm `mismatch: null` when nothing was identified, and which limit reason wins when a file exceeds both pixel and side limits (the seed avoids such files).
-3. C05's `formats.json` supplies `format` IDs and the MIME of CFB-encrypted OOXML.
+1. C01 publishes that artefact at `contracts/v0.1.0`. The corpus states both `stored` and `display` in every `dimensions`.
+2. Which limit reason wins when a file exceeds both the pixel and the side limit (the seed avoids such files).
+3. C05's `formats.json` supplies `format` IDs; encrypted OOXML uses `application/x-ole-storage` provisionally.
 
 ## Assumptions about other Wave 1 components
 
