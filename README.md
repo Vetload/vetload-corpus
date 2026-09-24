@@ -2,7 +2,7 @@
 
 The upload torture corpus: awkward, real-shaped files with the results a truthful file inspector must return. Mislabelled images, sideways phone photos, truncated video, encrypted and booby-trapped documents, polyglots and more, each generated reproducibly or carefully licensed.
 
-**Status:** being set up. Generators, the manifest and the first release arrive in the first build wave.
+**Status:** planning. The design is in [ARCHITECTURE.md](ARCHITECTURE.md), the draft manifest schema in [`schema/`](schema/), and the proposed first files with their expected results in [docs/seed-corpus.md](docs/seed-corpus.md). Nothing is generated yet.
 
 ## What you will find
 
